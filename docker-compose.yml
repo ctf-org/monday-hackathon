@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+
+  monday-hackathon:
+    container_name: monday-hackathon
+    restart: unless-stopped
+    tty: true
+    build:
+      context: ./docker/python
+    ports:
+      - '8800:8800'
+    volumes:
+      - ./:/usr/src/app
+    env_file:
+      - .env
