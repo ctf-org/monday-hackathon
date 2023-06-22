@@ -4,8 +4,11 @@ import requests
 import json
 import time
 import os
+# it doesnt work other  (with env file)way on my side 
 import openai
 openai.api_key = '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'
+
+from app.db import db
 
 
 router = APIRouter()
@@ -14,8 +17,74 @@ router = APIRouter()
 async def example():
     return {"it": "works"}
 
-@router.get("/downloadBoardTask")
-async def download_data():
+@router.get("/init")
+async def init():
+    await download_board_task()
+    await download_user()
+    await download_boards()
+    await format_data()
+    await import_data()
+
+    return {"status": "ok"}
+
+@router.get("/format")
+async def format_data():
+    with open('data/tasksAndValues.json') as json_file:
+        data = json.load(json_file)
+
+    times_formatted = []
+
+    tasks_formatted = []
+    for board in data['data']['boards']:
+        for item in board['items']:
+            tasks_formatted.append({'task_id': item['id'],
+                                    'task_name': item['name'],
+                                    'created_at': item['created_at'],
+                                    'board_id': board['id']})
+
+            for column in item['column_values']:
+                if column['type'] == 'duration':
+                    if column['value']:
+                        values = json.loads(column['value'])
+
+                        for time_val in values['additional_value']:
+                            tmp_val = time_val
+                            tmp_val['board_id'] = board['id']
+                            tmp_val['task_id'] = item['id']
+                            times_formatted.append(tmp_val)
+
+    with open("data/tasks_formatted.json", "w") as new_file:
+        new_file.write('\n'.join([json.dumps(task) for task in tasks_formatted]))
+
+    with open("data/times_formatted.json", "w") as new_file:
+        new_file.write('\n'.join([json.dumps(time) for time in times_formatted]))
+
+    with open('data/users.json') as json_file:
+        data = json.load(json_file)
+
+    with open("data/users_formatted.json", "w") as new_file:
+        new_file.write('\n'.join([json.dumps(user) for user in data['data']['users']]))
+
+    with open('data/boards.json') as json_file:
+        data = json.load(json_file)
+
+    with open("data/boards_formatted.json", "w") as new_file:
+        new_file.write('\n'.join([json.dumps(board) for board in data['data']['boards'] if board['type'] == 'board']))
+
+@router.get("/import")
+async def import_data():
+    f = open("database.sql", "r")
+    query = f.read()
+    f.close()
+
+    sqlCommands = query.split(';')
+    for command in sqlCommands:
+        await db.execute(command)
+
+    return {"status": "ok"}
+
+@router.get("/download-board-task")
+async def download_board_task():
     # Base of your GraphQL query
     query_template = """
     query {{
@@ -70,26 +139,30 @@ async def download_data():
                     if not boards:
                         # If it's empty, break the loop
                         break
-                    all_boards.extend(boards)
+                    all_boards.extend(data['data']['boards'])
                     page += 1
                 else:
                     print("Error:", response.status_code)
                     break
 
+        new_dict = {
+            "data": {
+                "boards": all_boards
+            }
+        }
+
         with open(filename, "w") as file:
-            json.dump(all_boards, file, indent=4)
+            json.dump(new_dict, file, indent=4)
 
         print("Data saved successfully.")
-
-    apiKey = "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjI2MzM5MTgzNCwiYWFpIjoxMSwidWlkIjo0NDY5Mjg5MiwiaWFkIjoiMjAyMy0wNi0xOVQwNzo1MDo1Ni45MjdaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTc0NDUzNjAsInJnbiI6ImV1YzEifQ.rbK-c0pO_kOgECFGcuOfEcnMJ0ce55w9vlbVV-EW4S0"
     query = query_template.format(page=1)
     filename = "data/tasksAndValues.json"
-    download_and_save_data(apiKey, query, filename)
+    download_and_save_data(os.environ.get('MONDAY_API_KEY'), query, filename)
 
     return {"it": "works"}
 
-@router.get("/downloadUser")
-async def download_data():
+@router.get("/download-user")
+async def download_user():
     def download_and_save_data(api_key, query, filename):
         url = "https://api.monday.com/v2"
         headers = {
@@ -107,7 +180,6 @@ async def download_data():
         else:
             print("Error:", response.status_code)
 
-    apiKey = "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjI2MzM5MTgzNCwiYWFpIjoxMSwidWlkIjo0NDY5Mjg5MiwiaWFkIjoiMjAyMy0wNi0xOVQwNzo1MDo1Ni45MjdaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTc0NDUzNjAsInJnbiI6ImV1YzEifQ.rbK-c0pO_kOgECFGcuOfEcnMJ0ce55w9vlbVV-EW4S0"
     query = '''
     {
         users {
@@ -125,12 +197,12 @@ async def download_data():
     '''
     filename = "data/users.json"
 
-    download_and_save_data(apiKey, query, filename)
+    download_and_save_data(os.environ.get('MONDAY_API_KEY'), query, filename)
 
     return {"it": "works"}
 
-@router.get("/downloadBoards")
-async def download_data():
+@router.get("/download-boards")
+async def download_boards():
     def download_and_save_data(api_key, query, filename):
         url = "https://api.monday.com/v2"
         headers = {
@@ -148,7 +220,6 @@ async def download_data():
         else:
             print("Error:", response.status_code)
 
-    apiKey = "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjI2MzM5MTgzNCwiYWFpIjoxMSwidWlkIjo0NDY5Mjg5MiwiaWFkIjoiMjAyMy0wNi0xOVQwNzo1MDo1Ni45MjdaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTc0NDUzNjAsInJnbiI6ImV1YzEifQ.rbK-c0pO_kOgECFGcuOfEcnMJ0ce55w9vlbVV-EW4S0"
     query = '''
     query {
       boards {
@@ -163,10 +234,9 @@ async def download_data():
     '''
     filename = "data/boards.json"
 
-    download_and_save_data(apiKey, query, filename)
+    download_and_save_data(os.environ.get('MONDAY_API_KEY'), query, filename)
 
     return {"it": "works"}
-
 @router.get("/talkWithAI")
 async def talk_with_AI():
     return {"Answer": "Now I am become Death, the destroyer of worlds "}
@@ -243,3 +313,23 @@ async def talk_with_AI2(monday_location: str = "Hakaton"):
     answer = run_conversation()
  
     return {"Kowalski": answer["choices"][0]["message"]["content"]}
+
+@router.get("/wrong/3")
+async def mistake():
+    query = """
+        SELECT tt.task_id, tt.board_id, tt.started_at, tt.ended_at,
+               started_user.username AS started_username, started_user.email AS started_user_email,started_user.id AS started_user_id,
+               ended_user.username AS ended_username,ended_user.id AS ended_id, ended_user.email AS ended_user_email, tasks_data.task_name,
+               boards_data.board_name
+        FROM monday_src.time_tracking tt
+        LEFT JOIN monday_src.users started_user ON tt.started_user_id = started_user.id
+        LEFT JOIN monday_src.users ended_user ON tt.ended_user_id = ended_user.id
+        LEFT JOIN monday_src.tasks tasks_data ON tt.task_id = tasks_data.id
+        LEFT JOIN monday_src.boards boards_data ON tt.board_id = boards_data.id
+        WHERE tt.started_user_id != tt.ended_user_id;
+    """
+
+    rows = await db.fetch_all(query=query)
+
+    return rows
+
