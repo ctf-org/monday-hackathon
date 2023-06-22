@@ -10,6 +10,50 @@ router = APIRouter()
 async def example():
     return {"it": "works"}
 
+@router.get("/format")
+async def example():
+    with open('data/tasksAndValues.json') as json_file:
+        data = json.load(json_file)
+
+    times_formatted = []
+
+    tasks_formatted = []
+    for board in data['data']['boards']:
+        for item in board['items']:
+            tasks_formatted.append({'task_id': item['id'],
+                                    'task_name': item['name'],
+                                    'created_at': item['created_at'],
+                                    'board_id': board['id']})
+
+            for column in item['column_values']:
+                if column['type'] == 'duration':
+                    if column['value']:
+                        values = json.loads(column['value'])
+
+                        for time_val in values['additional_value']:
+                            tmp_val = time_val
+                            tmp_val['board_id'] = board['id']
+                            tmp_val['task_id'] = item['id']
+                            times_formatted.append(tmp_val)
+
+    with open("data/tasks_formatted.json", "w") as new_file:
+        new_file.write('\n'.join([json.dumps(task) for task in tasks_formatted]))
+
+    with open("data/times_formatted.json", "w") as new_file:
+        new_file.write('\n'.join([json.dumps(time) for time in times_formatted]))
+
+    with open('data/users.json') as json_file:
+        data = json.load(json_file)
+
+    with open("data/users_formatted.json", "w") as new_file:
+        new_file.write('\n'.join([json.dumps(user) for user in data['data']['users']]))
+
+    with open('data/boardsV.json') as json_file:
+        data = json.load(json_file)
+
+    with open("data/boards_formatted.json", "w") as new_file:
+        new_file.write('\n'.join([json.dumps(board) for board in data['data']['boards'] if board['type'] == 'board']))
+
 @router.get("/downloadBoardTask")
 async def download_data():
     # Base of your GraphQL query
