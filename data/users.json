@@ -1,0 +1,62 @@
+{
+    "data": {
+        "users": [
+            {
+                "name": "Natallia Miazhennaya",
+                "email": "natasha.mezhennaya@gmail.com",
+                "id": 44692892,
+                "birthday": null,
+                "is_admin": true,
+                "is_guest": false,
+                "is_pending": false,
+                "is_verified": true,
+                "time_zone_identifier": "Europe/Warsaw"
+            },
+            {
+                "name": "gabriel@network-interactive.pl",
+                "email": "gabriel@network-interactive.pl",
+                "id": 44695365,
+                "birthday": null,
+                "is_admin": true,
+                "is_guest": false,
+                "is_pending": false,
+                "is_verified": true,
+                "time_zone_identifier": "Europe/Warsaw"
+            },
+            {
+                "name": "Larysa Kuchko",
+                "email": "larysa@ctf.com.pl",
+                "id": 44696718,
+                "birthday": null,
+                "is_admin": true,
+                "is_guest": false,
+                "is_pending": false,
+                "is_verified": true,
+                "time_zone_identifier": "Europe/Warsaw"
+            },
+            {
+                "name": "michal@network-interactive.pl",
+                "email": "michal@network-interactive.pl",
+                "id": 44699721,
+                "birthday": null,
+                "is_admin": true,
+                "is_guest": false,
+                "is_pending": false,
+                "is_verified": true,
+                "time_zone_identifier": "Europe/Warsaw"
+            },
+            {
+                "name": "roman@ctf.com.pl",
+                "email": "roman@ctf.com.pl",
+                "id": 44699728,
+                "birthday": null,
+                "is_admin": true,
+                "is_guest": false,
+                "is_pending": true,
+                "is_verified": false,
+                "time_zone_identifier": null
+            }
+        ]
+    },
+    "account_id": 17445360
+}

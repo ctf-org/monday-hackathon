@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api import example
+from app.api import router
 from app.db import db
 
 app = FastAPI(title='Monday Hackathon')
@@ -12,4 +12,4 @@ async def startup():
 async def shutdown():
     await db.disconnect()
 
-app.include_router(example.router)
+app.include_router(router.router)

@@ -9,8 +9,34 @@ services:
     build:
       context: ./docker/python
     ports:
-      - '8800:8800'
+      - 8800:8800
     volumes:
       - ./:/usr/src/app
     env_file:
       - .env
+    networks:
+      - main
+
+  monday-db:
+    image: postgres:15.2-alpine
+    container_name: monday-db
+    hostname: monday-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hackathon
+      POSTGRES_PASSWORD: hackathon
+      POSTGRES_DB: hackathon
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+    networks:
+      - main
+
+networks:
+  main:
+    driver: bridge
+
+volumes:
+  postgres-volume:
+    driver: local

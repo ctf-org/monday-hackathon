@@ -7,14 +7,8 @@ import time
 router = APIRouter()
 
 @router.get("/")
-async def root():
-    return {"it": "works"}
-
-@router.get("/example")
 async def example():
-    llm = OpenAI(temperature=0.9)
-    text = "What would be a good company name for a company that makes colorful socks?"
-    return {text: llm(text).strip()}
+    return {"it": "works"}
 
 @router.get("/downloadBoardTask")
 async def download_data():
@@ -85,10 +79,11 @@ async def download_data():
 
     apiKey = "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjI2MzM5MTgzNCwiYWFpIjoxMSwidWlkIjo0NDY5Mjg5MiwiaWFkIjoiMjAyMy0wNi0xOVQwNzo1MDo1Ni45MjdaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTc0NDUzNjAsInJnbiI6ImV1YzEifQ.rbK-c0pO_kOgECFGcuOfEcnMJ0ce55w9vlbVV-EW4S0"
     query = query_template.format(page=1)
-    filename = "tasksAndValues.json"
+    filename = "data/tasksAndValues.json"
     download_and_save_data(apiKey, query, filename)
 
     return {"it": "works"}
+
 @router.get("/downloadUser")
 async def download_data():
     def download_and_save_data(api_key, query, filename):
@@ -124,11 +119,12 @@ async def download_data():
         }
     }
     '''
-    filename = "users.json"
+    filename = "data/users.json"
 
     download_and_save_data(apiKey, query, filename)
 
     return {"it": "works"}
+
 @router.get("/downloadBoards")
 async def download_data():
     def download_and_save_data(api_key, query, filename):
@@ -161,9 +157,8 @@ async def download_data():
       }
     }
     '''
-    filename = "boards.json"
+    filename = "data/boards.json"
 
     download_and_save_data(apiKey, query, filename)
 
     return {"it": "works"}
-
