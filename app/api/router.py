@@ -48,7 +48,7 @@ async def example():
     with open("data/users_formatted.json", "w") as new_file:
         new_file.write('\n'.join([json.dumps(user) for user in data['data']['users']]))
 
-    with open('data/boardsV.json') as json_file:
+    with open('data/boards.json') as json_file:
         data = json.load(json_file)
 
     with open("data/boards_formatted.json", "w") as new_file:
@@ -110,14 +110,20 @@ async def download_data():
                     if not boards:
                         # If it's empty, break the loop
                         break
-                    all_boards.extend(boards)
+                    all_boards.extend(data['data']['boards'])
                     page += 1
                 else:
                     print("Error:", response.status_code)
                     break
 
+        new_dict = {
+            "data": {
+                "boards": all_boards
+            }
+        }
+
         with open(filename, "w") as file:
-            json.dump(all_boards, file, indent=4)
+            json.dump(new_dict, file, indent=4)
 
         print("Data saved successfully.")
 
