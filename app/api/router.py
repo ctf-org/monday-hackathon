@@ -240,20 +240,23 @@ async def download_boards():
 @router.get("/talkWithAI")
 async def talk_with_AI():
     return {"Answer": "Now I am become Death, the destroyer of worlds "}
+
 @router.get("/kowalskiAnalysis")
 async def talk_with_AI2(monday_location: str = "Hakaton"):
 
-    def get_problems(monday_location, location_type="Board"):
+    # print(await mistake1())
+
+    async def get_problems(monday_location, location_type="Board"):
         #
         # get data from DB 
         # get users wit
         #
         forecast=[]
-        if(True):
+        if(await mistake1()):
             forecast.append( "Users count time multiple timers at the same time")
-        if(True):
+        if(False):
             forecast.append("List of users who count time in multiple timers")
-        if(True):
+        if(False):
             forecast.append("User stop time couter of another user.")
 
         # end of DB quering
@@ -266,7 +269,7 @@ async def talk_with_AI2(monday_location: str = "Hakaton"):
             "forecast": forecast,
         }
         return json.dumps(issues_info)
-    def run_conversation():
+    async def run_conversation():
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo-0613",
             messages=[{"role": "user", "content": "What is wrong in my data on board "+monday_location+"?"}],
@@ -292,7 +295,7 @@ async def talk_with_AI2(monday_location: str = "Hakaton"):
         message = response["choices"][0]["message"]
         if message.get("function_call"):
             function_name = message["function_call"]["name"]
-        function_response = get_problems(
+        function_response = await get_problems(
                 monday_location=message.get("monday_location"),
                 location_type=message.get("location_type"),
             )
@@ -309,12 +312,12 @@ async def talk_with_AI2(monday_location: str = "Hakaton"):
                 ],
             )
         return second_response
-    answer = run_conversation()
+    answer = await run_conversation()
  
     return {"Kowalski": answer["choices"][0]["message"]["content"]}
 
 @router.get("/wrong/3")
-async def mistake():
+async def mistake3():
     query = """
         SELECT tt.task_id, tt.board_id, tt.started_at, tt.ended_at,
                started_user.username AS started_username, started_user.email AS started_user_email,started_user.id AS started_user_id,
@@ -333,7 +336,7 @@ async def mistake():
     return rows
 
 @router.get("/wrong/1")
-async def mistake():
+async def mistake1():
     query = """
 WITH user_times AS (
 	SELECT t.task_id,
@@ -367,7 +370,7 @@ WHERE (started_at, ended_at)  OVERLAPS (COALESCE(start2, '1900-01-01'),COALESCE(
     return rows
 
 @router.get("/wrong/2")
-async def mistake():
+async def mistake2():
     query = """
 SELECT task_id, started_user_id, ended_user_id, started_user.username as starter_username,
 ended_user.username as ended_username,
