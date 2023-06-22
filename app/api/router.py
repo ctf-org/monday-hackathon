@@ -3,6 +3,7 @@ from langchain.llms import OpenAI
 import requests
 import json
 import time
+import os
 from app.db import db
 
 router = APIRouter()
@@ -75,10 +76,6 @@ async def import_data():
     for command in sqlCommands:
         await db.execute(command)
 
-    # await db.execute(query="CREATE SCHEMA IF NOT EXISTS monday_lnd;")
-
-    # query = "select version()"
-    # rows = await db.fetch_all(query=query)
     return {"status": "ok"}
 
 @router.get("/download-board-task")
@@ -153,11 +150,9 @@ async def download_board_task():
             json.dump(new_dict, file, indent=4)
 
         print("Data saved successfully.")
-
-    apiKey = "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjI2MzM5MTgzNCwiYWFpIjoxMSwidWlkIjo0NDY5Mjg5MiwiaWFkIjoiMjAyMy0wNi0xOVQwNzo1MDo1Ni45MjdaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTc0NDUzNjAsInJnbiI6ImV1YzEifQ.rbK-c0pO_kOgECFGcuOfEcnMJ0ce55w9vlbVV-EW4S0"
     query = query_template.format(page=1)
     filename = "data/tasksAndValues.json"
-    download_and_save_data(apiKey, query, filename)
+    download_and_save_data(os.environ.get('MONDAY_API_KEY'), query, filename)
 
     return {"it": "works"}
 
@@ -180,7 +175,6 @@ async def download_user():
         else:
             print("Error:", response.status_code)
 
-    apiKey = "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjI2MzM5MTgzNCwiYWFpIjoxMSwidWlkIjo0NDY5Mjg5MiwiaWFkIjoiMjAyMy0wNi0xOVQwNzo1MDo1Ni45MjdaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTc0NDUzNjAsInJnbiI6ImV1YzEifQ.rbK-c0pO_kOgECFGcuOfEcnMJ0ce55w9vlbVV-EW4S0"
     query = '''
     {
         users {
@@ -198,7 +192,7 @@ async def download_user():
     '''
     filename = "data/users.json"
 
-    download_and_save_data(apiKey, query, filename)
+    download_and_save_data(os.environ.get('MONDAY_API_KEY'), query, filename)
 
     return {"it": "works"}
 
@@ -221,7 +215,6 @@ async def download_boards():
         else:
             print("Error:", response.status_code)
 
-    apiKey = "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjI2MzM5MTgzNCwiYWFpIjoxMSwidWlkIjo0NDY5Mjg5MiwiaWFkIjoiMjAyMy0wNi0xOVQwNzo1MDo1Ni45MjdaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTc0NDUzNjAsInJnbiI6ImV1YzEifQ.rbK-c0pO_kOgECFGcuOfEcnMJ0ce55w9vlbVV-EW4S0"
     query = '''
     query {
       boards {
@@ -236,7 +229,7 @@ async def download_boards():
     '''
     filename = "data/boards.json"
 
-    download_and_save_data(apiKey, query, filename)
+    download_and_save_data(os.environ.get('MONDAY_API_KEY'), query, filename)
 
     return {"it": "works"}
 @router.get("/wrong/3")
