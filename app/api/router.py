@@ -257,3 +257,36 @@ async def mistake():
     rows = await db.fetch_all(query=query)
 
     return rows
+@router.get("/wrong/1")
+async def mistake():
+    query = """
+WITH user_times AS (
+	SELECT t.task_id,
+			ta.task_name,
+			t.started_user_id AS user_id,
+			u1.username,
+			started_at,
+			ended_at,
+			lag(started_at,1) OVER(PARTITION BY t.started_user_id ORDER BY started_at) AS start2,
+			lag(ended_at,1) OVER(PARTITION BY t.started_user_id ORDER BY started_at) AS end2
+	FROM monday_src.time_tracking t
+		LEFT JOIN monday_src.users u1
+		ON t.started_user_id = u1.id
+		LEFT JOIN monday_src.tasks ta
+		ON ta.id = t.task_id
+		)
+
+SELECT 	user_id,
+		username,
+		task_id,
+		task_name,
+		started_at,
+		ended_at
+
+FROM user_times
+WHERE (started_at, ended_at)  OVERLAPS (COALESCE(start2, '1900-01-01'),COALESCE(end2, '1900-01-01'))
+    """
+
+    rows = await db.fetch_all(query=query)
+
+    return rows
