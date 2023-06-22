@@ -72,14 +72,18 @@ async def download_data():
                     if not boards:
                         # If it's empty, break the loop
                         break
-                    all_boards.extend(boards)
+                    all_boards.extend(data['data']['boards'])
                     page += 1
                 else:
                     print("Error:", response.status_code)
                     break
-
+        new_dict = {
+            "data": {
+                "boards": all_boards
+            }
+        }
         with open(filename, "w") as file:
-            json.dump(all_boards, file, indent=4)
+            json.dump(new_dict, file, indent=4)
 
         print("Data saved successfully.")
 
@@ -166,4 +170,3 @@ async def download_data():
     download_and_save_data(apiKey, query, filename)
 
     return {"it": "works"}
-
