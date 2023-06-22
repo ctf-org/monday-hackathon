@@ -3,6 +3,10 @@ from langchain.llms import OpenAI
 import requests
 import json
 import time
+import os
+import openai
+openai.api_key = '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'
+
 
 router = APIRouter()
 
@@ -162,3 +166,80 @@ async def download_data():
     download_and_save_data(apiKey, query, filename)
 
     return {"it": "works"}
+
+@router.get("/talkWithAI")
+async def talk_with_AI():
+    return {"Answer": "Now I am become Death, the destroyer of worlds "}
+@router.get("/kowalskiAnalysis")
+async def talk_with_AI2(monday_location: str = "Hakaton"):
+
+    def get_problems(monday_location, location_type="Board"):
+        #
+        # get data from DB 
+        # get users wit
+        #
+        
+        forecast=[]
+        if(True):
+            forecast.append( "Users count time multiple timers at the same time")
+        if(True):
+            forecast.append("List of users who count time in multiple timers")
+        if(True):
+            forecast.append("User stop time couter of another user.")
+
+        # end of DB quering
+
+        """Get the current weather in a given location"""
+        issues_info = {
+            "clickup_location": monday_location,
+            "problems_detected": len(forecast),
+            "location_type": location_type,
+            "forecast": forecast,
+        }
+        return json.dumps(issues_info)
+    def run_conversation():
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo-0613",
+            messages=[{"role": "user", "content": "What is wrong in my data on board "+monday_location+"?"}],
+            functions=[
+                {
+                    "name": "get_problems",
+                    "description": "Identify problems in users data",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "monday_location": {
+                                "type": "string",
+                                "description": "Monday item location name",
+                            },
+                            "board_type": {"type": "string", "enum": ["board", "document", "List"]},
+                        },
+                        "required": ["monday_location"],
+                    },
+                }
+            ],
+            function_call="auto",
+        )
+        message = response["choices"][0]["message"]
+        if message.get("function_call"):
+            function_name = message["function_call"]["name"]
+        function_response = get_problems(
+                monday_location=message.get("monday_location"),
+                location_type=message.get("location_type"),
+            )
+        second_response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo-0613",
+                messages=[
+                    {"role": "user", "content": "What is wrong in my data on Board "+monday_location+" ?" },
+                    message,
+                    {
+                        "role": "function",
+                        "name": function_name,
+                        "content": function_response,
+                    },
+                ],
+            )
+        return second_response
+    answer = run_conversation()
+ 
+    return {"Kowalski": answer["choices"][0]["message"]["content"]}
