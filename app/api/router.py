@@ -251,13 +251,35 @@ async def talk_with_AI2(monday_location: str = "Hakaton"):
         # get data from DB 
         # get users wit
         #
+        param1 = await mistake1()
+        param2 = await mistake2()
+        param3 = await mistake3()
         forecast=[]
-        if(await mistake1()):
-            forecast.append( "Users count time multiple timers at the same time")
-        if(False):
-            forecast.append("List of users who count time in multiple timers")
-        if(False):
-            forecast.append("User stop time couter of another user.")
+
+        if(param1):
+
+
+            usernames = [entry["username"] for entry in param1]
+
+            usernames_string = "\n".join(usernames)
+
+            tasks = [entry["task_name"] for entry in param1]
+
+            tasks_string = "\n".join(tasks)
+
+            forecast.append( f'Users count time multiple timers at the same time , please show this user everytime{usernames_string}')
+        if(param2):
+            usernames = [entry["ended_username"] for entry in param2]
+
+            usernames_string = "\n".join(usernames)
+
+            forecast.append(f"List of users who count time in multiple timers, please show this usernames everytime {usernames_string}")
+        if(param3):
+            usernames = [entry["started_user_email"] for entry in param3]
+
+            usernames_string = "\n".join(usernames)
+
+            forecast.append(f"User stop time counter of another user.{usernames_string}")
 
         # end of DB quering
 
