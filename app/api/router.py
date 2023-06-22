@@ -68,7 +68,7 @@ async def format_data():
 @router.get("/import")
 async def import_data():
     f = open("database.sql", "r")
-    query = f.read();
+    query = f.read()
     f.close()
 
     sqlCommands = query.split(';')
@@ -239,3 +239,21 @@ async def download_boards():
     download_and_save_data(apiKey, query, filename)
 
     return {"it": "works"}
+@router.get("/wrong/3")
+async def mistake():
+    query = """
+        SELECT tt.task_id, tt.board_id, tt.started_at, tt.ended_at,
+               started_user.username AS started_username, started_user.email AS started_user_email,started_user.id AS started_user_id,
+               ended_user.username AS ended_username,ended_user.id AS ended_id, ended_user.email AS ended_user_email, tasks_data.task_name,
+               boards_data.board_name
+        FROM monday_src.time_tracking tt
+        LEFT JOIN monday_src.users started_user ON tt.started_user_id = started_user.id
+        LEFT JOIN monday_src.users ended_user ON tt.ended_user_id = ended_user.id
+        LEFT JOIN monday_src.tasks tasks_data ON tt.task_id = tasks_data.id
+        LEFT JOIN monday_src.boards boards_data ON tt.board_id = boards_data.id
+        WHERE tt.started_user_id != tt.ended_user_id;
+    """
+
+    rows = await db.fetch_all(query=query)
+
+    return rows
