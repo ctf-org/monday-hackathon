@@ -3,6 +3,7 @@ from langchain.llms import OpenAI
 import requests
 import json
 import time
+from app.db import db
 
 router = APIRouter()
 
@@ -10,8 +11,18 @@ router = APIRouter()
 async def example():
     return {"it": "works"}
 
+@router.get("/init")
+async def init():
+    await download_board_task()
+    await download_user()
+    await download_boards()
+    await format_data()
+    await import_data()
+
+    return {"status": "ok"}
+
 @router.get("/format")
-async def example():
+async def format_data():
     with open('data/tasksAndValues.json') as json_file:
         data = json.load(json_file)
 
@@ -54,8 +65,24 @@ async def example():
     with open("data/boards_formatted.json", "w") as new_file:
         new_file.write('\n'.join([json.dumps(board) for board in data['data']['boards'] if board['type'] == 'board']))
 
-@router.get("/downloadBoardTask")
-async def download_data():
+@router.get("/import")
+async def import_data():
+    f = open("database.sql", "r")
+    query = f.read();
+    f.close()
+
+    sqlCommands = query.split(';')
+    for command in sqlCommands:
+        await db.execute(command)
+
+    # await db.execute(query="CREATE SCHEMA IF NOT EXISTS monday_lnd;")
+
+    # query = "select version()"
+    # rows = await db.fetch_all(query=query)
+    return {"status": "ok"}
+
+@router.get("/download-board-task")
+async def download_board_task():
     # Base of your GraphQL query
     query_template = """
     query {{
@@ -134,8 +161,8 @@ async def download_data():
 
     return {"it": "works"}
 
-@router.get("/downloadUser")
-async def download_data():
+@router.get("/download-user")
+async def download_user():
     def download_and_save_data(api_key, query, filename):
         url = "https://api.monday.com/v2"
         headers = {
@@ -175,8 +202,8 @@ async def download_data():
 
     return {"it": "works"}
 
-@router.get("/downloadBoards")
-async def download_data():
+@router.get("/download-boards")
+async def download_boards():
     def download_and_save_data(api_key, query, filename):
         url = "https://api.monday.com/v2"
         headers = {
