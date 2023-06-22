@@ -6,7 +6,7 @@ import time
 import os
 # it doesnt work other  (with env file)way on my side 
 import openai
-openai.api_key = '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'
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 from app.db import db
 
@@ -248,7 +248,6 @@ async def talk_with_AI2(monday_location: str = "Hakaton"):
         # get data from DB 
         # get users wit
         #
-        
         forecast=[]
         if(True):
             forecast.append( "Users count time multiple timers at the same time")
