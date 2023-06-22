@@ -367,3 +367,20 @@ WHERE (started_at, ended_at)  OVERLAPS (COALESCE(start2, '1900-01-01'),COALESCE(
 
     return rows
 
+@router.get("/wrong/2")
+async def mistake():
+    query = """
+SELECT task_id, started_user_id, ended_user_id, started_user.username as starter_username,
+ended_user.username as ended_username,
+tasks_data.task_name as task_name, ended_at - started_at  as interval
+FROM monday_src.time_tracking tt
+ LEFT JOIN monday_src.users started_user ON tt.started_user_id = started_user.id
+  LEFT JOIN monday_src.users ended_user ON tt.ended_user_id = ended_user.id
+    LEFT JOIN monday_src.tasks tasks_data ON tt.task_id = tasks_data.id
+
+WHERE ended_at - started_at > interval '8 hours';
+    """
+
+    rows = await db.fetch_all(query=query)
+
+    return rows
